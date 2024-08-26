@@ -1,13 +1,14 @@
-package ratelimiter
+package tokenbucket
 
 import (
 	"fmt"
 	"time"
+
 	U "github.com/mukhtar-husnain/rate-limiter/util"
 )
 
 const (
-	INVALID_MAX_AMOUNT    string  = "invalid_max_amount"
+	INVALID_MAX_AMOUNT    string = "invalid_max_amount"
 	INVALID_REFILL_AMOUNT string = "invalid_refill_amount"
 	INVALID_REFILL_TIME   string = "invalid_refill_time"
 )
@@ -25,7 +26,7 @@ func NewBucket(maxAmount, refillTime, refillAmount int64) (*TokenBucket, error) 
 	if maxAmount <= 0 {
 		return nil, fmt.Errorf(INVALID_MAX_AMOUNT)
 	}
-	if refillAmount > maxAmount {
+	if refillAmount > maxAmount || refillAmount <= 0 {
 		return nil, fmt.Errorf(INVALID_REFILL_AMOUNT)
 	}
 	if refillTime <= 0 {
@@ -44,7 +45,6 @@ func NewBucket(maxAmount, refillTime, refillAmount int64) (*TokenBucket, error) 
 	}, nil
 }
 
-
 func (tb *TokenBucket) AllowRequest() bool {
 	tb.Value++
 	return tb.Value < tb.MaxAmount
@@ -53,6 +53,6 @@ func (tb *TokenBucket) AllowRequest() bool {
 func (tb *TokenBucket) RefillBucket() {
 	currentTime := time.Now().UnixNano()
 	refillRate := (currentTime - tb.LastUpdatedAt) / tb.RefillTime
-	tb.Value = U.MinInt64(tb.MaxAmount, tb.Value + refillRate * tb.RefillAmount)
+	tb.Value = U.MinInt64(tb.MaxAmount, tb.Value+refillRate*tb.RefillAmount)
 	tb.LastUpdatedAt = currentTime
 }

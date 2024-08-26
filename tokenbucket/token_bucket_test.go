@@ -1,0 +1,50 @@
+package tokenbucket_test
+
+import (
+	"testing"
+
+	"github.com/mukhtar-husnain/rate-limiter/tokenbucket"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestCreateTokenBucketRateLimiter(t *testing.T) {
+	badBucket, err := tokenbucket.NewBucket(0, 86400, 1000)
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), tokenbucket.INVALID_MAX_AMOUNT)
+	assert.Nil(t, badBucket)
+
+	badBucket, err = tokenbucket.NewBucket(-10, 86400, 1000)
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), tokenbucket.INVALID_MAX_AMOUNT)
+	assert.Nil(t, badBucket)
+
+	badBucket, err = tokenbucket.NewBucket(1000, 0, 1000)
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), tokenbucket.INVALID_REFILL_TIME)
+	assert.Nil(t, badBucket)
+
+	badBucket, err = tokenbucket.NewBucket(1000, -1, 1000)
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), tokenbucket.INVALID_REFILL_TIME)
+	assert.Nil(t, badBucket)
+
+	badBucket, err = tokenbucket.NewBucket(100, 3600e9, 1000)
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), tokenbucket.INVALID_REFILL_AMOUNT)
+	assert.Nil(t, badBucket)
+
+	badBucket, err = tokenbucket.NewBucket(100, 3600e9, 0)
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), tokenbucket.INVALID_REFILL_AMOUNT)
+	assert.Nil(t, badBucket)
+
+	badBucket, err = tokenbucket.NewBucket(100, 3600e9, -1000)
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), tokenbucket.INVALID_REFILL_AMOUNT)
+	assert.Nil(t, badBucket)
+
+	//Correct token bucket
+	tb, err := tokenbucket.NewBucket(1000, 86400, 1000)
+	assert.Nil(t, err)
+	assert.NotNil(t, tb)
+}

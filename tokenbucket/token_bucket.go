@@ -46,8 +46,8 @@ func NewBucket(maxAmount, refillTime, refillAmount int64) (*TokenBucket, error) 
 }
 
 func (tb *TokenBucket) AllowRequest() bool {
-	tb.Value++
-	return tb.Value < tb.MaxAmount
+	tb.Value--
+	return tb.Value >= 0
 }
 
 func (tb *TokenBucket) RefillBucket() {

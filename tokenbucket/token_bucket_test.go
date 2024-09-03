@@ -48,3 +48,16 @@ func TestCreateTokenBucketRateLimiter(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, tb)
 }
+
+func TestAllowRequest(t *testing.T) {
+	tokenBucketSize := int64(10)
+	tb, err := tokenbucket.NewBucket(tokenBucketSize, 86400, tokenBucketSize)
+	assert.Nil(t, err)
+	assert.NotNil(t, tb)
+
+	for i := 0; i < int(tokenBucketSize) ; i++ {
+		check := tb.AllowRequest() 
+		assert.Equal(t, true, check)
+	} 
+	assert.Equal(t, false, tb.AllowRequest())
+}
